@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 The OmniROM Project
+* Copyright (C) 2018 The OmniROM Project
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -43,12 +43,11 @@ public class SunlightVisibilityPreference extends Preference implements
     private int mOldStrength;
     private int mMinValue;
     private int mMaxValue;
-    private static final String KEY_SUNLIGHT_VISIBILITY = "sunlight_enhancement";
 
     public SunlightVisibilityPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mMinValue = DisplayManagement.getRangeSunlightVisibilityStrength(0);
-        mMaxValue = DisplayManagement.getRangeSunlightVisibilityStrength(1);
+        mMinValue = DisplayManagement.getRangeSVIStrength(0);
+        mMaxValue = DisplayManagement.getRangeSVIStrength(1);
 
         setLayoutResource(R.layout.preference_seek_bar);
     }
@@ -57,41 +56,28 @@ public class SunlightVisibilityPreference extends Preference implements
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
 
-        mOldStrength = getValue(getContext());
+        mOldStrength = getValue();
         mSeekBar = (SeekBar) holder.findViewById(R.id.seekbar);
         mSeekBar.setMax(mMaxValue - mMinValue);
         mSeekBar.setProgress(mOldStrength - mMinValue);
         mSeekBar.setOnSeekBarChangeListener(this);
     }
 
-    public static boolean isSupported() {
-        return DisplayManagement.mColorService != null;
+    public int getValue() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        return Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_SUNLIGHT_VISIBILITY, DisplayManagement.getDefaultValue(DisplayManagement.KEY_SUNLIGHT_VISIBILITY)));
     }
 
-	public static int getValue(Context context) {
-		return DisplayManagement.getColorBalance();
-	}
-
-	private void setValue(String newValue, boolean withFeedback) {
-	    DisplayManagement.setSVI(Integer.parseInt(newValue));
+    private void setValue(String newValue) {
+        DisplayManagement.setSVI(Integer.parseInt(newValue));
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
-        editor.putString(KEY_SUNLIGHT_VISIBILITY, newValue);
+        editor.putString(DisplayManagement.KEY_SUNLIGHT_VISIBILITY, newValue);
         editor.commit();
-
-	}
-
-    public static void restore(Context context) {
-        if (!isSupported()) {
-            return;
-        }
-
-        String storedValue = PreferenceManager.getDefaultSharedPreferences(context).getString(KEY_SUNLIGHT_VISIBILITY, "0"); 
-         DisplayManagement.setSVI(Integer.parseInt(storedValue));
     }
 
     public void onProgressChanged(SeekBar seekBar, int progress,
             boolean fromTouch) {
-        setValue(String.valueOf(progress + mMinValue), true);
+        setValue(String.valueOf(progress + mMinValue));
     }
 
     public void onStartTrackingTouch(SeekBar seekBar) {
@@ -100,6 +86,10 @@ public class SunlightVisibilityPreference extends Preference implements
 
     public void onStopTrackingTouch(SeekBar seekBar) {
         // NA
+    }
+
+    public void resetToDefaults() {
+        mSeekBar.setProgress(Integer.valueOf(DisplayManagement.getDefaultValue(DisplayManagement.KEY_SUNLIGHT_VISIBILITY)), true);
     }
 }
 

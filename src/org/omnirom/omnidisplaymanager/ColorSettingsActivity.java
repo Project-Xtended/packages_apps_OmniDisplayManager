@@ -40,6 +40,7 @@ public class ColorSettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setTitle(getResources().getString(R.string.title));
 
         Fragment fragment = getFragmentManager().findFragmentById(android.R.id.content);
         if (fragment == null) {

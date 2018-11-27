@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The OmniROM Project
+ * Copyright (C) 2018 The OmniROM Project
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,6 @@ public class ColorBalancePreference extends Preference implements
     private int mOldStrength;
     private int mMinValue;
     private int mMaxValue;
-    private static final String KEY_COLOR_BALANCE = "color_balance";
     private static final String TAG = "ColorBalancePreference";
 
     public ColorBalancePreference(Context context, AttributeSet attrs) {
@@ -66,14 +65,15 @@ public class ColorBalancePreference extends Preference implements
     }
 
     public int getValue() {
-        String colorBalance = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(KEY_COLOR_BALANCE, "-1");
-        return colorBalance.equals("-1") ? DisplayManagement.getColorBalance() : Integer.parseInt(colorBalance);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        return Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_COLOR_BALANCE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_COLOR_BALANCE)));
     }
 
     private void setValue(String newValue, boolean withFeedback) {
         DisplayManagement.setColorBalance(Integer.parseInt(newValue));
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
-        editor.putString(KEY_COLOR_BALANCE, newValue);
+        editor.putString(DisplayManagement.KEY_COLOR_BALANCE, newValue);
         editor.commit();
     }
 
@@ -89,6 +89,10 @@ public class ColorBalancePreference extends Preference implements
 
     public void onStopTrackingTouch(SeekBar seekBar) {
         // NA
+    }
+
+    public void resetToDefaults() {
+        mSeekBar.setProgress(Integer.valueOf(DisplayManagement.getDefaultValue(DisplayManagement.KEY_COLOR_BALANCE)), true);
     }
 }
 

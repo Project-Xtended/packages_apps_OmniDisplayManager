@@ -25,12 +25,14 @@ import com.qti.service.colorservice.IColorServiceImpl;
 import com.qti.snapdragon.sdk.display.ModeInfo;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DisplayManagement {
 
-    public static IColorServiceImpl mColorService;
-    private static final String TAG = "DisplayManagement";
-    public static boolean isDisplayManagementSupported;
+    private static IColorServiceImpl mColorService;
+    public static final String TAG = "DisplayManagement";
+    private static boolean isDisplayManagementSupported;
 
     public static final int FEATURE_COLOR_BALANCE = 0;
     public static final int FEATURE_COLOR_MODE_SELECTION = 1;
@@ -40,70 +42,109 @@ public class DisplayManagement {
     public static final int FEATURE_MEMORY_COLOR_ADJUSTMENT = 5;
     public static final int FEATURE_SUNLIGHT_VISBILITY_IMPROVEMENT = 6;
 
-    public static void init(){
-        try {
-            mColorService = new IColorServiceImpl();
-            mColorService.native_init();
-            isDisplayManagementSupported = true;
-        } catch (Throwable t) {
-            // Ignore, DisplayEngineService not available.
+    public static final String KEY_CONTRAST_VALUE = "contrast_value";
+    public static final String KEY_HUE_VALUE = "hue_value";
+    public static final String KEY_INTENSITY_VALUE = "intensity_value";
+    public static final String KEY_SATURATION_VALUE = "saturation_value";
+    public static final String KEY_COLOR_BALANCE = "color_balance";
+    public static final String KEY_SUNLIGHT_VISIBILITY = "sunlight_enhancement";
+
+    private static Map<String, String> mDefaultValues = new HashMap();
+
+    private static void init(){
+        if (mColorService == null) {
+            try {
+                mColorService = new IColorServiceImpl();
+                mColorService.native_init();
+                isDisplayManagementSupported = true;
+                saveDefaults();
+            } catch (Throwable t) {
+                // Ignore, DisplayEngineService not available.
+            }
         }
     }
 
     public static int getActiveMode() {
-        int defaultMode = mColorService.native_getDefaultMode(0);
+        int defaultMode = getColorService().native_getDefaultMode(0);
         return defaultMode;
     }
 
     public static ModeInfo[] getModes() {
-        ModeInfo[] modes = mColorService.native_getModes(0, 2);
+        ModeInfo[] modes = getColorService().native_getModes(0, 2);
         return modes;
     }
 
     public static void setMode(int modeId) {
-        if (mColorService == null) {
-            init();
-        }
-        mColorService.native_setActiveMode(0, modeId);
-        mColorService.native_setDefaultMode(0, modeId);
+        getColorService().native_setActiveMode(0, modeId);
     }
 
     public static boolean isFeatureSupported(int featId) {
-        int supported = mColorService.native_isFeatureSupported(0, featId);
+        int supported = getColorService().native_isFeatureSupported(0, featId);
         return supported > 0;
-
     }
 
     public static int getColorBalance() {
-        int balanceValue = mColorService.native_getColorBalance(0);
+        int balanceValue = getColorService().native_getColorBalance(0);
         return balanceValue;
     }
 
     public static void setColorBalance(int newValue) {
-        mColorService.native_setColorBalance(0, newValue);
+        getColorService().native_setColorBalance(0, newValue);
     }
 
-    public static int getRangeSunlightVisibilityStrength(int minMax) {
-        return mColorService.native_setSVI(0, minMax);
+    public static int getSVI() {
+        return getColorService().native_getSVI(0);
+    }
+
+    public static int getRangeSVIStrength(int index) {
+        return getColorService().native_getRangeSVI(0, index);
     }
 
     public static void setSVI(int newValue) {
-        mColorService.native_setSVI(0, newValue);
+        getColorService().native_setSVI(0, newValue);
+    }
+
+    public static int getBacklightQualityLevel() {
+        return getColorService().native_getBacklightQualityLevel(0);
     }
 
     public static void setBacklightQualityLevel(int index) {
-        mColorService.native_setBacklightQualityLevel(0, index);
+        getColorService().native_setBacklightQualityLevel(0, index);
     }
 
     public static int[] getRangePAParameter() {
-        return mColorService.native_getRangePAParameter(0);
+        return getColorService().native_getRangePAParameter(0);
     }
 
     public static int[] getPAParameters() {
-        return mColorService.native_getPAParameters(0);
+        int[] v = getColorService().native_getPAParameters(0);
+        return v;
     }
 
     public static void setPAParameters(int displayId, int flag, int hue, int saturation, int intensity, int contrast, int satThreshold){
-        mColorService.native_setPAParameters(displayId, flag, hue, saturation, intensity, contrast, satThreshold);
+        getColorService().native_setPAParameters(displayId, flag, hue, saturation, intensity, contrast, satThreshold);
+    }
+
+    public static String getDefaultValue(String key) {
+        return mDefaultValues.get(key);
+    }
+
+    private static IColorServiceImpl getColorService() {
+        if (mColorService == null) {
+            init();
+        }
+        return mColorService;
+    }
+
+    private static void saveDefaults() {
+        if (mDefaultValues.size() == 0) {
+            mDefaultValues.put(KEY_CONTRAST_VALUE, "100");
+            mDefaultValues.put(KEY_HUE_VALUE, "180");
+            mDefaultValues.put(KEY_INTENSITY_VALUE, "100");
+            mDefaultValues.put(KEY_SATURATION_VALUE, "50");
+            mDefaultValues.put(KEY_COLOR_BALANCE, "0");
+            mDefaultValues.put(KEY_SUNLIGHT_VISIBILITY, "-1");
+            Log.i(TAG, "defaults = " + mDefaultValues);
+        }
     }
 }

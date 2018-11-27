@@ -20,6 +20,7 @@ package org.omnirom.omnidisplaymanager;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.opengl.Matrix;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.Preference.OnPreferenceChangeListener;
 import android.support.v14.preference.PreferenceFragment;
@@ -38,11 +40,18 @@ import android.provider.Settings;
 import android.provider.SearchIndexableResource;
 import android.util.SparseArray;
 import android.util.Slog;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.omni.DeviceUtils;
 
 import com.qti.snapdragon.sdk.display.ModeInfo;
+
+import org.omnirom.omnidisplaymanager.preferences.ColorBalancePreference;
+import org.omnirom.omnidisplaymanager.preferences.SunlightVisibilityPreference;
+import org.omnirom.omnidisplaymanager.preferences.PictureAdjustmentPreference;
 
 import java.util.List;
 import java.util.Arrays;
@@ -56,7 +65,6 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
     private static final String PREF_DISPLAY_MODE = "display_management_mode";
     private static final String PREF_COLOR_BALANCE = "color_balance";
     private static final String PREF_SVI = "sunlight_enhancement";
-    private static final String PREF_ADAPTIVE_BACKLIGHT = "adaptive_backlight";
     private static final String PREF_READING_MODE = "reading_mode";
 
     private static final int LEVEL_COLOR_MATRIX_READING = 201;
@@ -64,6 +72,8 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
     private static final SparseArray<float[]> mColorMatrix = new SparseArray<>(3);
     private static final int SURFACE_FLINGER_TRANSACTION_COLOR_MATRIX = 1015;
     private static final float[][] mTempColorMatrix = new float[2][16];
+
+    private static final int MENU_RESET = Menu.FIRST;
 
     /**
      * Matrix and offset used for converting color to grayscale.
@@ -86,11 +96,9 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-
-        ensureDisplayManagementUp();
-
         setPreferencesFromResource(R.xml.display_management_settings, rootKey);
-        if (!DisplayManagement.isFeatureSupported(DisplayManagement.FEATURE_COLOR_BALANCE)) {
+        if (!DisplayManagement.isFeatureSupported(DisplayManagement.FEATURE_COLOR_BALANCE) ||
+                !getResources().getBoolean(R.bool.color_balance_support)) {
             Preference pref = getPreferenceScreen().findPreference(PREF_COLOR_BALANCE);
             if (pref != null) {
                 getPreferenceScreen().removePreference(pref);
@@ -104,18 +112,9 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
             }
         }
 
-        if (!DisplayManagement.isFeatureSupported(DisplayManagement.FEATURE_ADAPTIVE_BACKLIGHT)) {
-            Preference pref = getPreferenceScreen().findPreference(PREF_ADAPTIVE_BACKLIGHT);
-            if (pref != null) {
-                getPreferenceScreen().removePreference(pref);
-            }
-        } else {
-            mAdaptiveBacklightMode = (ListPreference) findPreference(PREF_ADAPTIVE_BACKLIGHT);
-            mAdaptiveBacklightMode.setOnPreferenceChangeListener(this);
-        }
-
-        if (!DisplayManagement.isFeatureSupported(DisplayManagement.FEATURE_COLOR_MODE_SELECTION)) {
-            Preference pref = getPreferenceScreen().findPreference(PREF_SVI);
+        if (!DisplayManagement.isFeatureSupported(DisplayManagement.FEATURE_COLOR_MODE_SELECTION) ||
+                !getResources().getBoolean(R.bool.display_mode_support)) {
+            Preference pref = getPreferenceScreen().findPreference(PREF_DISPLAY_MODE);
             if (pref != null) {
                 getPreferenceScreen().removePreference(pref);
             }
@@ -139,12 +138,7 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
         }
 
         mReadingMode = (SwitchPreference) findPreference(PREF_READING_MODE);
-    }
-
-    private void ensureDisplayManagementUp() {
-        if (DisplayManagement.mColorService == null) {
-            DisplayManagement.init();
-        }
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -165,11 +159,6 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
             DisplayManagement.setMode(index);
             mDisplayMode.setSummary(mDisplayMode.getEntries()[index]);
             return true;
-        } else if (preference == mAdaptiveBacklightMode) {
-            int val = Integer.parseInt((String) newValue);
-            int index = mAdaptiveBacklightMode.findIndexOfValue((String) newValue);
-            DisplayManagement.setBacklightQualityLevel(index);
-            mAdaptiveBacklightMode.setSummary(mAdaptiveBacklightMode.getEntries()[index]);
         }
         return false;
     }
@@ -238,6 +227,49 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
             Matrix.multiplyMM(result[(i + 1) % 2], 0, result[i % 2], 0, rhs, 0);
         }
         return result[count % 2];
+    }
+
+    private void resetToDefaults() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.remove(DisplayManagement.KEY_CONTRAST_VALUE);
+        editor.remove(DisplayManagement.KEY_HUE_VALUE);
+        editor.remove(DisplayManagement.KEY_INTENSITY_VALUE);
+        editor.remove(DisplayManagement.KEY_SATURATION_VALUE);
+        editor.remove(DisplayManagement.KEY_COLOR_BALANCE);
+        editor.remove(DisplayManagement.KEY_SUNLIGHT_VISIBILITY);
+        editor.commit();
+            
+        for (int i = 0; i < getPreferenceScreen().getPreferenceCount(); i++) {
+            Preference p = getPreferenceScreen().getPreference(i);
+            if (p instanceof PictureAdjustmentPreference) {
+                ((PictureAdjustmentPreference)p).resetToDefaults();
+            }
+            if (p instanceof ColorBalancePreference) {
+                ((ColorBalancePreference)p).resetToDefaults();
+            }
+            if (p instanceof SunlightVisibilityPreference) {
+                ((SunlightVisibilityPreference)p).resetToDefaults();
+            }
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.add(0, MENU_RESET, 0, R.string.reset)
+                .setIcon(R.drawable.ic_settings_backup_restore)
+                .setAlphabeticShortcut('r')
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case MENU_RESET:
+                resetToDefaults();
+                return true;
+        }
+        return false;
     }
 }
 

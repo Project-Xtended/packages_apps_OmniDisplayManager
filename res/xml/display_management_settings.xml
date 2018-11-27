@@ -13,11 +13,18 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:title="@string/title">
+
+        <org.omnirom.omnidisplaymanager.preferences.LayoutPreference
+            android:key="header"
+            android:layout="@layout/header_layout"
+            android:selectable="false"/>
 
         <org.omnirom.omnidisplaymanager.preferences.ColorBalancePreference
             android:key="color_balance"
-            android:title="@string/color_balance_title" />
+            android:title="@string/color_balance_title"
+            android:dependency="reading_mode" />
 
         <org.omnirom.omnidisplaymanager.preferences.PictureAdjustmentPreference
             android:key="hue_value"
@@ -49,16 +56,8 @@
             android:summary="%s"
             android:persistent="false" />
 
-        <ListPreference
-            android:key="adaptive_backlight"
-            android:entries="@array/adaptive_backlight_entries"
-            android:entryValues="@array/adaptive_backlight_values"
-            android:title="@string/adaptive_backlight_title"
-            android:summary="%s"
-            android:persistent="false" />
-
-    <SwitchPreference
-        android:key="reading_mode"
-        android:title="@string/reading_mode_title"
-        android:persistent="false" />
+        <SwitchPreference
+            android:key="reading_mode"
+            android:title="@string/reading_mode_title"
+            android:disableDependentsState="true" />
 </PreferenceScreen>

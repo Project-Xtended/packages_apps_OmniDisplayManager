@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The OmniROM Project
+ * Copyright (C) 2018 The OmniROM Project
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@ import android.widget.SeekBar;
 import android.widget.Button;
 import android.os.Bundle;
 import android.util.Log;
-import android.os.Vibrator;
 
 import org.omnirom.omnidisplaymanager.DisplayManagement;
 import org.omnirom.omnidisplaymanager.R;
@@ -45,25 +44,13 @@ public class PictureAdjustmentPreference extends Preference implements
     private int mOldStrength;
     private int mMinValue;
     private int mMaxValue;
-    private static final String KEY_CONTRAST_VALUE = "contrast_value";
-    private static final String KEY_HUE_VALUE = "hue_value";
-    private static final String KEY_INTENSITY_VALUE = "intensity_value";
-    private static final String KEY_SATURATION_VALUE = "saturation_value";
     private PictureAdjustment currentAdjustment;
-
-    public enum AdjustmentType {
-        CONTRAST,
-        HUE,
-        INTENSITY,
-        SATURATION,
-        NONE
-    }
 
     public PictureAdjustmentPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs);
         int[] ranges = DisplayManagement.getRangePAParameter();
-        Log.e("ranges", Arrays.toString(ranges));
+        Log.i("ranges", Arrays.toString(ranges));
         if (ranges != null && ranges.length > 0) {
             mMinValue = ranges[currentAdjustment.minRangeIndex];
             mMaxValue = ranges[currentAdjustment.maxRangeIndex];
@@ -79,16 +66,16 @@ public class PictureAdjustmentPreference extends Preference implements
         String ajustmentType = attrs.getAttributeValue(null, "adjustmentType");
         switch (ajustmentType) {
             case "contrast":
-                currentAdjustment = new PictureAdjustment(6, 7, 4, KEY_CONTRAST_VALUE);
+                currentAdjustment = new PictureAdjustment(6, 7, 4, DisplayManagement.KEY_CONTRAST_VALUE);
                 break;
             case "hue":
-                currentAdjustment = new PictureAdjustment(0, 1, 1, KEY_HUE_VALUE);
+                currentAdjustment = new PictureAdjustment(0, 1, 1, DisplayManagement.KEY_HUE_VALUE);
                 break;
             case "intensity":
-                currentAdjustment = new PictureAdjustment(4, 5, 3, KEY_INTENSITY_VALUE);
+                currentAdjustment = new PictureAdjustment(4, 5, 3, DisplayManagement.KEY_INTENSITY_VALUE);
                 break;
             case "saturation":
-                currentAdjustment = new PictureAdjustment(2, 3, 2, KEY_SATURATION_VALUE);
+                currentAdjustment = new PictureAdjustment(2, 3, 2, DisplayManagement.KEY_SATURATION_VALUE);
                 break;
         }
     }
@@ -106,28 +93,34 @@ public class PictureAdjustmentPreference extends Preference implements
 
     public int getValue() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        return sharedPrefs.getString(currentAdjustment.preferenceKey, "-1").equals("-1") ? DisplayManagement.getPAParameters()[currentAdjustment.parameterIndex] : Integer.parseInt(sharedPrefs.getString(currentAdjustment.preferenceKey, "-1"));
+        return Integer.valueOf(sharedPrefs.getString(currentAdjustment.preferenceKey,
+                DisplayManagement.getDefaultValue(currentAdjustment.preferenceKey)));
     }
 
     private void setValue(String newValue) {
         int[] currentValue = DisplayManagement.getPAParameters();
+
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        int contrast = sharedPrefs.getString(KEY_CONTRAST_VALUE, "-1").equals("-1") ? currentValue[4] : Integer.parseInt(sharedPrefs.getString(KEY_CONTRAST_VALUE, "-1"));
-        int hue = sharedPrefs.getString(KEY_HUE_VALUE, "-1").equals("-1") ? currentValue[1] : Integer.parseInt(sharedPrefs.getString(KEY_HUE_VALUE, "-1"));
-        int intensity = sharedPrefs.getString(KEY_INTENSITY_VALUE, "-1").equals("-1") ? currentValue[3] : Integer.parseInt(sharedPrefs.getString(KEY_INTENSITY_VALUE, "-1"));
-        int saturation = sharedPrefs.getString(KEY_SATURATION_VALUE, "-1").equals("-1") ? currentValue[2] : Integer.parseInt(sharedPrefs.getString(KEY_SATURATION_VALUE, "-1"));
+        int contrast = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_CONTRAST_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_CONTRAST_VALUE)));
+        int hue = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_HUE_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_HUE_VALUE)));
+        int intensity = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_INTENSITY_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_INTENSITY_VALUE)));
+        int saturation = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_SATURATION_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_SATURATION_VALUE)));
 
         switch (currentAdjustment.preferenceKey) {
-            case KEY_CONTRAST_VALUE:
+            case DisplayManagement.KEY_CONTRAST_VALUE:
                 DisplayManagement.setPAParameters(0, currentValue[0], hue, saturation, intensity, Integer.parseInt(newValue), currentValue[5]);
                 break;
-            case KEY_HUE_VALUE:
+            case DisplayManagement.KEY_HUE_VALUE:
                 DisplayManagement.setPAParameters(0, currentValue[0], Integer.parseInt(newValue), saturation, intensity, contrast, currentValue[5]);
                 break;
-            case KEY_INTENSITY_VALUE:
+            case DisplayManagement.KEY_INTENSITY_VALUE:
                 DisplayManagement.setPAParameters(0, currentValue[0], hue, saturation, Integer.parseInt(newValue), contrast, currentValue[5]);
                 break;
-            case KEY_SATURATION_VALUE:
+            case DisplayManagement.KEY_SATURATION_VALUE:
                 DisplayManagement.setPAParameters(0, currentValue[0], hue, Integer.parseInt(newValue), intensity, contrast, currentValue[5]);
                 break;
         }
@@ -148,6 +141,10 @@ public class PictureAdjustmentPreference extends Preference implements
 
     public void onStopTrackingTouch(SeekBar seekBar) {
         // NA
+    }
+
+    public void resetToDefaults() {
+        mSeekBar.setProgress(Integer.valueOf(DisplayManagement.getDefaultValue(currentAdjustment.preferenceKey)), true);
     }
 
     public class PictureAdjustment {

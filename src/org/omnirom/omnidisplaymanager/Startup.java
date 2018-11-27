@@ -27,29 +27,28 @@ import android.text.TextUtils;
 
 public class Startup extends BroadcastReceiver {
 
-    private static final String KEY_CONTRAST_VALUE = "contrast_value";
-    private static final String KEY_HUE_VALUE = "hue_value";
-    private static final String KEY_INTENSITY_VALUE = "intensity_value";
-    private static final String KEY_SATURATION_VALUE = "saturation_value";
-
-    private static final String KEY_COLOR_BALANCE = "color_balance";
-
     @Override
     public void onReceive(final Context context, final Intent bootintent) {
-        DisplayManagement.init();
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-
         int[] currentValue = DisplayManagement.getPAParameters();
-        int contrast = sharedPrefs.getString(KEY_CONTRAST_VALUE, "-1").equals("-1") ? currentValue[4] : Integer.parseInt(sharedPrefs.getString(KEY_CONTRAST_VALUE, "-1"));
-        int hue = sharedPrefs.getString(KEY_HUE_VALUE, "-1").equals("-1") ? currentValue[1] : Integer.parseInt(sharedPrefs.getString(KEY_HUE_VALUE, "-1"));
-        int intensity = sharedPrefs.getString(KEY_INTENSITY_VALUE, "-1").equals("-1") ? currentValue[3] : Integer.parseInt(sharedPrefs.getString(KEY_INTENSITY_VALUE, "-1"));
-        int saturation = sharedPrefs.getString(KEY_SATURATION_VALUE, "-1").equals("-1") ? currentValue[2] : Integer.parseInt(sharedPrefs.getString(KEY_SATURATION_VALUE, "-1"));
 
+        int contrast = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_CONTRAST_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_CONTRAST_VALUE)));
+        int hue = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_HUE_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_HUE_VALUE)));
+        int intensity = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_INTENSITY_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_INTENSITY_VALUE)));
+        int saturation = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_SATURATION_VALUE,
+                DisplayManagement.getDefaultValue(DisplayManagement.KEY_SATURATION_VALUE)));
         DisplayManagement.setPAParameters(0, currentValue[0], hue, saturation, intensity, contrast, currentValue[5]);
 
-        int colorBalance = sharedPrefs.getString(KEY_COLOR_BALANCE, "-1").equals("-1") ? DisplayManagement.getColorBalance() : Integer.parseInt(sharedPrefs.getString(KEY_SATURATION_VALUE, "-1"));
-        DisplayManagement.setColorBalance(colorBalance);
+        if (context.getResources().getBoolean(R.bool.color_balance_support)) {
+            int colorBalance = Integer.valueOf(sharedPrefs.getString(DisplayManagement.KEY_COLOR_BALANCE,
+                    DisplayManagement.getDefaultValue(DisplayManagement.KEY_COLOR_BALANCE)));
+            DisplayManagement.setColorBalance(colorBalance);
+        }
 
-        DisplayManagement.setMode(DisplayManagement.getActiveMode());
+        // always reset on reboot
+        sharedPrefs.edit().putBoolean("reading_mode", false).commit();
     }
 }

@@ -44,6 +44,8 @@ LOCAL_AAPT_FLAGS := --auto-add-overlay \
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
+LOCAL_DEX_PREOPT := false
+
 include packages/apps/OmniLib/common.mk
 
 include $(BUILD_PACKAGE)
