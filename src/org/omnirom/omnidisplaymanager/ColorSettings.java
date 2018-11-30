@@ -47,7 +47,6 @@ import android.view.MenuItem;
 
 import com.android.internal.app.ColorDisplayController;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
-import com.android.internal.util.omni.DeviceUtils;
 
 import com.qti.snapdragon.sdk.display.ModeInfo;
 
