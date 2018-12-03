@@ -49,6 +49,6 @@ public class Startup extends BroadcastReceiver {
         }
 
         // always reset on reboot
-        sharedPrefs.edit().putBoolean("reading_mode", false).commit();
+        sharedPrefs.edit().putBoolean(ColorSettings.PREF_READING_MODE, false).commit();
     }
 }

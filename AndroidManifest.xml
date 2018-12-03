@@ -61,5 +61,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     android:name="android.service.quicksettings.action.QS_TILE"/>
             </intent-filter>
         </service>
+
+        <service
+            android:name=".ReadingModeTileService"
+            android:icon="@drawable/ic_tile_reading_mode"
+            android:label="@string/reading_mode_title"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
     </application>
 </manifest>

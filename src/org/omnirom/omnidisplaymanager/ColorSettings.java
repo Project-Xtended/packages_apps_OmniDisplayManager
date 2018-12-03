@@ -65,7 +65,7 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
     private static final String PREF_DISPLAY_MODE = "display_management_mode";
     private static final String PREF_COLOR_BALANCE = "color_balance";
     private static final String PREF_SVI = "sunlight_enhancement";
-    private static final String PREF_READING_MODE = "reading_mode";
+    public static final String PREF_READING_MODE = "reading_mode";
 
     private static final int LEVEL_COLOR_MATRIX_READING = 201;
 
