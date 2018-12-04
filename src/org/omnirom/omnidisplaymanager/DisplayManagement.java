@@ -60,69 +60,121 @@ public class DisplayManagement {
                 saveDefaults();
             } catch (Throwable t) {
                 // Ignore, DisplayEngineService not available.
+                Log.e(TAG, "init", t);
             }
         }
     }
 
     public static int getActiveMode() {
-        int defaultMode = getColorService().native_getDefaultMode(0);
-        return defaultMode;
+        try {
+            int defaultMode = getColorService().native_getDefaultMode(0);
+            return defaultMode;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static ModeInfo[] getModes() {
-        ModeInfo[] modes = getColorService().native_getModes(0, 2);
-        return modes;
+        try {
+            ModeInfo[] modes = getColorService().native_getModes(0, 2);
+            return modes;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static void setMode(int modeId) {
-        getColorService().native_setActiveMode(0, modeId);
+        try {
+            getColorService().native_setActiveMode(0, modeId);
+        } catch (Exception e) {
+        }
     }
 
     public static boolean isFeatureSupported(int featId) {
-        int supported = getColorService().native_isFeatureSupported(0, featId);
-        return supported > 0;
+        try {
+            int supported = getColorService().native_isFeatureSupported(0, featId);
+            return supported > 0;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public static int getColorBalance() {
-        int balanceValue = getColorService().native_getColorBalance(0);
-        return balanceValue;
+        try {
+            int balanceValue = getColorService().native_getColorBalance(0);
+            return balanceValue;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static void setColorBalance(int newValue) {
-        getColorService().native_setColorBalance(0, newValue);
+        try {
+            getColorService().native_setColorBalance(0, newValue);
+        } catch (Exception e) {
+        }
     }
 
     public static int getSVI() {
-        return getColorService().native_getSVI(0);
+        try {
+            return getColorService().native_getSVI(0);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static int getRangeSVIStrength(int index) {
-        return getColorService().native_getRangeSVI(0, index);
+        try {
+            return getColorService().native_getRangeSVI(0, index);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static void setSVI(int newValue) {
-        getColorService().native_setSVI(0, newValue);
+        try {
+            getColorService().native_setSVI(0, newValue);
+        } catch (Exception e) {
+        }
     }
 
     public static int getBacklightQualityLevel() {
-        return getColorService().native_getBacklightQualityLevel(0);
+        try {
+            return getColorService().native_getBacklightQualityLevel(0);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static void setBacklightQualityLevel(int index) {
-        getColorService().native_setBacklightQualityLevel(0, index);
+        try {
+            getColorService().native_setBacklightQualityLevel(0, index);
+        } catch (Exception e) {
+        }
     }
 
     public static int[] getRangePAParameter() {
-        return getColorService().native_getRangePAParameter(0);
+        try {
+            return getColorService().native_getRangePAParameter(0);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static int[] getPAParameters() {
-        int[] v = getColorService().native_getPAParameters(0);
-        return v;
+        try {
+            int[] v = getColorService().native_getPAParameters(0);
+            return v;
+        } catch (Exception e) {
+            return new int[] {0, 0, 0, 0, 0, 0};
+        }
     }
 
     public static void setPAParameters(int displayId, int flag, int hue, int saturation, int intensity, int contrast, int satThreshold){
-        getColorService().native_setPAParameters(displayId, flag, hue, saturation, intensity, contrast, satThreshold);
+        try {
+            getColorService().native_setPAParameters(displayId, flag, hue, saturation, intensity, contrast, satThreshold);
+        } catch (Exception e) {
+        }
     }
 
     public static String getDefaultValue(String key) {
