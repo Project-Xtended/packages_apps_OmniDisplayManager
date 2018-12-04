@@ -24,6 +24,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.opengl.Matrix;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
@@ -44,6 +45,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.android.internal.app.ColorDisplayController;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.omni.DeviceUtils;
 
@@ -145,7 +147,7 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
     public boolean onPreferenceTreeClick(Preference preference) {
         if (preference == mReadingMode) {
             boolean checked = ((SwitchPreference)preference).isChecked();
-            setReadingMode(checked);
+            setReadingMode(getActivity(), checked);
             return true;
         }
         return super.onPreferenceTreeClick(preference);
@@ -163,9 +165,25 @@ public class ColorSettings extends PreferenceFragment implements Preference.OnPr
         return false;
     }
 
-    public static void setReadingMode(boolean state) {
-        setColorMatrix(LEVEL_COLOR_MATRIX_READING,
-                state ? MATRIX_GRAYSCALE : MATRIX_NORMAL);
+    public static void setReadingMode(Context context, boolean state) {
+        if (state) {
+            setColorMatrix(LEVEL_COLOR_MATRIX_READING, MATRIX_GRAYSCALE);
+        } else {
+            setColorMatrix(LEVEL_COLOR_MATRIX_READING, MATRIX_NORMAL);
+            ColorDisplayController controller = new ColorDisplayController(context);
+            if (controller.isActivated()) {
+                // hack a shak : restore night mode if it was on
+                final int origValue = controller.getColorTemperature();
+                controller.setColorTemperature(origValue + 1);
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        controller.setColorTemperature(origValue);
+                    }
+                }, 1500);
+            }
+        }
     }
 
     public static void setColorMatrix(int level, float[] value) {

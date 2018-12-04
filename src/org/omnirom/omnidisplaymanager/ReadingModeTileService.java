@@ -54,10 +54,10 @@ public class ReadingModeTileService extends TileService {
         super.onClick();
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPrefs.getBoolean(ColorSettings.PREF_READING_MODE, false)) {
-            ColorSettings.setReadingMode(false);
+            ColorSettings.setReadingMode(this, false);
             sharedPrefs.edit().putBoolean(ColorSettings.PREF_READING_MODE, false).commit();
         } else {
-            ColorSettings.setReadingMode(true);
+            ColorSettings.setReadingMode(this, true);
             sharedPrefs.edit().putBoolean(ColorSettings.PREF_READING_MODE, true).commit();
         }
     }
