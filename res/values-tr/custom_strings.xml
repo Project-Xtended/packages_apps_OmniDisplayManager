@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  Copyright (C) 2017 The OmniROM Project
+  Parts Copyright (C) 2012-2013 The CyanogenMod Project
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">Omni ekran yöneticisi</string>
+    <string name="title">Ekran renkleri</string>
+    <string name="display_settings_title">Ekran</string>
+    <string name="color_balance_title">Renk dengesi</string>
+    <string name="display_management_mode">Ekran modu</string>
+    <string name="sunlight_enhancement_title">Güneş ışığı geliştirmesi</string>
+    <string name="adaptive_backlight_title">Adaptif arka ışık</string>
+    <string name="adaptive_backlight_low">Düşük</string>
+    <string name="adaptive_backlight_medium">Orta</string>
+    <string name="adaptive_backlight_hight">Yüksek</string>
+    <string name="adaptive_backlight_auto">Otomatik</string>
+    <string name="reading_mode_title">Okuma modu</string>
+    <string name="hue_title">Renk</string>
+    <string name="saturation_title">Doygunluk</string>
+    <string name="intensity_title">Yoğunluk</string>
+    <string name="contrast_title">Kontrast</string>
+    <string name="reset">Sıfırla</string>
+    <string name="display_manager_tile">Ekran renkleri</string>
+</resources>
